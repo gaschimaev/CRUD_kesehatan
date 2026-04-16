@@ -32,7 +32,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             echo "🚀 Mulai deployment..."
-            cd /var/www/crud-kesehatan
+            cd /var/www/CRUD_kesehatan
             git pull origin main
             sudo systemctl reload nginx
             echo "✅ Deployment selesai!"
