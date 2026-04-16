@@ -15,11 +15,11 @@ jobs:
 
       - name: Validasi File HTML
         run: |
-          echo "✅ Mengecek file index.html..."
+          echo "Mengecek file index.html..."
           if [ -f "index.html" ]; then
-            echo "index.html ditemukan ✓"
+            echo "index.html ditemukan OK"
           else
-            echo "❌ index.html tidak ditemukan!"
+            echo "index.html tidak ditemukan!"
             exit 1
           fi
 
@@ -30,13 +30,14 @@ jobs:
 
       - name: Deploy ke EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            echo "🚀 Mulai deployment..."
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} bash << 'ENDSSH'
+            set -e
+            echo "Mulai deployment..."
             cd /var/www/CRUD_kesehatan
             git pull origin main
             sudo systemctl reload nginx
-            echo "✅ Deployment selesai!"
-          EOF
+            echo "Deployment selesai!"
+          ENDSSH
 
       - name: Verifikasi Deployment
         run: |
@@ -44,7 +45,7 @@ jobs:
           STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }})
           echo "HTTP Status: $STATUS"
           if [ "$STATUS" = "200" ]; then
-            echo "✅ Website berhasil diakses!"
+            echo "Website berhasil diakses!"
           else
-            echo "⚠️ Website response: $STATUS"
+            echo "Website response: $STATUS"
           fi
