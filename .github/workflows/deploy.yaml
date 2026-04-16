@@ -1,0 +1,50 @@
+name: CI/CD CRUD Kesehatan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Validasi File HTML
+        run: |
+          echo "✅ Mengecek file index.html..."
+          if [ -f "index.html" ]; then
+            echo "index.html ditemukan ✓"
+          else
+            echo "❌ index.html tidak ditemukan!"
+            exit 1
+          fi
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy ke EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "🚀 Mulai deployment..."
+            cd /var/www/crud-kesehatan
+            git pull origin main
+            sudo systemctl reload nginx
+            echo "✅ Deployment selesai!"
+          EOF
+
+      - name: Verifikasi Deployment
+        run: |
+          sleep 5
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://${{ secrets.EC2_HOST }})
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Website berhasil diakses!"
+          else
+            echo "⚠️ Website response: $STATUS"
+          fi
